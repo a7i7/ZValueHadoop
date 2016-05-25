@@ -9,8 +9,8 @@ fi
 filename=$1
 classname=${filename%.*}
 
-echo "Start compiling..." $filename &&
-javac -Xlint -cp ".:$HBASE_LIB1:$HBASE_LIB2" $filename &&
-echo "Compiled, Running........." $ &&
+echo "Start compiling..." $filename
+javac -Xlint -cp ".:$HBASE_LIB1:$HBASE_LIB2" $filename
+echo "Compiled, Running........." $classname
 
 java -cp ".:$HBASE_LIB1:$HBASE_LIB2" $classname

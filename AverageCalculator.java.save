@@ -5,8 +5,7 @@ import java.util.*;
 import java.io.*;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.*;
-import java.math.*;
-
+import java.math.BigDecimal;
 public class AverageCalculator {
 
 	private static final int TOTAL_COMBINERS = 3;
@@ -16,42 +15,57 @@ public class AverageCalculator {
 		public void map(LongWritable key,Text value, OutputCollector<IntWritable,Text> output,Reporter reporter) throws IOException
 		{
 			DoubleWritable dataVal = new DoubleWritable(new Double(value.toString()));
-			int currentKey = (int)(Math.random()*TOTAL_COMBINERS);
+			//int newKey = (int)(Math.random()*TOTAL_COMBINERS);
+			currentKey = (currentKey+1)%TOTAL_COMBINERS;
 			output.collect(new IntWritable(currentKey),new Text(value.toString()+","+1));
 			// java.util.logging.Logger.getLogger(AverageCalculator.class.getName()).log(java.util.logging.Level.SEVERE,newKey+" "+value.toString(),"");
 
 		}
 	}
 
+	// public static class Combine extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text>
+	// {
+	// 	public void reduce(IntWritable key, Iterator<Text> values, OutputCollector<IntWritable,Text> output, Reporter reporter) throws IOException
+	// 	{
+	// 		BigDecimal sum = new BigDecimal(0.0);
+	// 		int total = 0;
+	// 		while(values.hasNext())
+	// 		{
+	// 			Double next = new Double(values.next().toString());
+	// 			sum = sum.add(new BigDecimal(next));
+	// 			++total;
+	// 		}
+	// 		sum = sum.divide(new BigDecimal(total));
+	// 		output.collect(new IntWritable(1),new Text(sum+","+total));
+	// 	}
+	// }
+
 	public static class Reduce extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text>
 	{
 		public void reduce(IntWritable key, Iterator<Text> values, OutputCollector<IntWritable,Text> output, Reporter reporter) throws IOException
 		{
-
-			BigDecimal currentAverage = new BigDecimal("0.0");
-			BigDecimal currentCount = new BigDecimal("0.0");
+			BigDecimal sum = new BigDecimal("0.0");
+			BigDecimal count = new BigDecimal("0.0");
 			while(values.hasNext())
 			{
 				try{
 				Text val = values.next();
-
-					BigDecimal newAvg = new BigDecimal(val.toString().split(",")[0]);
-					BigDecimal newCount = new BigDecimal(val.toString().split(",")[1]);
-					BigDecimal temp = currentAverage.multiply(currentCount);
-					temp = temp.add(newAvg.multiply(newCount));
-					currentCount = currentCount.add(newCount);
-					temp = temp.divide(currentCount,5,RoundingMode.HALF_UP);
-					currentAverage = temp;
+				BigDecimal currentAvg = new BigDecimal(val.toString().split(",")[0]);
+				BigDecimal currentCount = new BigDecimal(val.toString().split(",")[1]);
+				count = count.add(currentCount);
+				sum = sum.add(currentAvg.multiply(currentCount));
 				}
-				catch(Exception e)
+				catch(IOException e)
 				{
-					java.util.logging.Logger.getLogger(AverageCalculator.class.getName()).log(java.util.logging.Level.SEVERE,e.toString(),e.toString());
+
 				}
 			}
-			output.collect(new IntWritable(1),new Text(currentAverage.toString()+","+currentCount.toString()));
+			sum = sum.divide(count);
+			output.collect(new IntWritable(1),new Text(sum.toString()+","+count.toString()));
+
 		}
 	}
-	
+
 
 	public static void main(String args[]) throws Exception
 	{

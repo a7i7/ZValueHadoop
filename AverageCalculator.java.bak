@@ -68,7 +68,7 @@ public class AverageCalculator {
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
 		
-		FileInputFormat.setInputPaths(conf,new Path("so_many_numbers.txt"));
+		FileInputFormat.setInputPaths(conf,new Path("so_many_numbers.txt.bak"));
 		FileOutputFormat.setOutputPath(conf,new Path("ans"));
 		JobClient.runJob(conf);
 		return;
