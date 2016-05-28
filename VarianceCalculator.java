@@ -10,8 +10,8 @@ import java.math.*;
 public class VarianceCalculator {
 
 	private static final int TOTAL_COMBINERS = 30;
-	private static int currentKey = 0;
-	public static Double mean = 3.5;
+	public static Double mean = 0.0;
+
 	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, IntWritable, Text>
 	{
 		public void map(LongWritable key,Text value, OutputCollector<IntWritable,Text> output,Reporter reporter) throws IOException
@@ -64,6 +64,16 @@ public class VarianceCalculator {
 
 	public static void main(String args[]) throws Exception
 	{
+		if(args.length<3)
+		{
+			System.out.println("hadoop jar <bla,bla>  mean inputFilePath outputFilePath");
+			System.exit(1);
+		}
+
+		mean = new Double(args[0]);
+		String inputFilePath = args[1];
+		String outputFilePath = args[2];
+
 		JobConf conf = new JobConf(VarianceCalculator.class);
 		conf.setJobName("Variance");
 
@@ -77,8 +87,8 @@ public class VarianceCalculator {
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
 		
-		FileInputFormat.setInputPaths(conf,new Path("so_many_numbers.txt.bak"));
-		FileOutputFormat.setOutputPath(conf,new Path("variance_ans"));
+		FileInputFormat.setInputPaths(conf,new Path(inputFilePath));
+		FileOutputFormat.setOutputPath(conf,new Path(outputFilePath));
 		JobClient.runJob(conf);
 		return;
 	}
